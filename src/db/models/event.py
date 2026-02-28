@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
 from db.models.mixins import UUIDMixin
+from db.models.comment import Comment
 
 from db.models.base import Base
 
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from db.models import Community
     from db.models import EventMetrics
     from db.models import EventTranslation
+    from db.models import Comment
 
 
 class Event(Base, UUIDMixin):
@@ -33,4 +35,5 @@ class Event(Base, UUIDMixin):
     )
     community: Mapped["Community"] = relationship("Community")
     culture: Mapped["Culture"] = relationship("Culture")
-    metrics: Mapped[list["EventMetrics"]] = relationship("EventMetrics", uselist=False)
+    metrics: Mapped["EventMetrics"] = relationship("EventMetrics", uselist=False)
+    comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="event")

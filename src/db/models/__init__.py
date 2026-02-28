@@ -9,6 +9,8 @@ __all__ = [
     "Community",
     "CommunityTranslation",
     "EventTranslation",
+    "Comment",
+    "CommunityMetrics",
 ]
 
 from .base import Base
@@ -19,3 +21,5 @@ from .community_translation import CommunityTranslation
 from .event import Event
 from .event_metrics import EventMetrics
 from .event_translation import EventTranslation
+from .comment import Comment
+from .community_metrics import CommunityMetrics
