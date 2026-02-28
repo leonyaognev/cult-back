@@ -17,6 +17,8 @@ class User(UUIDMixin, Base):
 
     phone: Mapped[str | None]
 
+    login: Mapped[str | None]
+
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.RESEARCHER)
 
     language: Mapped[str] = mapped_column(String(10))
