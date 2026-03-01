@@ -4,64 +4,49 @@ from sqlalchemy import select
 from typing import List
 from uuid import UUID
 
+from db.repo import Repo
 from db.utils import get_session
 from db.models.user import User
 from schemas.user import UserCreate, UserRead, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+user_repo = Repo(User)
+
 
 @router.post("/", response_model=UserRead)
-async def create_user(user_in: UserCreate, db: AsyncSession = Depends(get_session)):
-    user = User(
+async def create_user(user_in: UserCreate):
+    user = await user_repo.add(
         login=user_in.login,
     )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
     return user
 
 
 @router.get("/{user_id}", response_model=UserRead)
-async def get_user(user_id: UUID, db: AsyncSession = Depends(get_session)):
-    user = await db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+async def get_user(user_id: UUID):
+    return user_repo.get_by_field("id", user_id)
 
 
 @router.get("/", response_model=List[UserRead])
-async def list_users(
-    skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_session)
-):
-    result = await db.execute(select(User).offset(skip).limit(limit))
-    users = result.scalars().all()
-    return users
+async def list_users():
+    return await user_repo.get_all()
 
 
 @router.patch("/{user_id}", response_model=UserRead)
-async def update_user(
-    user_id: UUID, user_in: UserUpdate, db: AsyncSession = Depends(get_session)
-):
-    user = await db.get(User, user_id)
-    if not user:
+async def update_user(user_id: UUID, user_in: UserUpdate):
+    update_data = user_in.dict(exclude_unset=True)
+
+    updated_rows = await user_repo.update_by_field("id", user_id, **update_data)
+
+    if not updated_rows:
         raise HTTPException(status_code=404, detail="User not found")
 
-    update_data = user_in.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(user, key, value)
-
-    await db.commit()
-    await db.refresh(user)
-    return user
+    return await user_repo.get_by_field("id", user_id)
 
 
 @router.delete("/{user_id}", status_code=204)
-async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_session)):
-    user = await db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+async def delete_user(user_id: UUID):
+    deleted_rows = await user_repo.delete_by_field("id", user_id)
 
-    await db.delete(user)
-    await db.commit()
-    return
+    if not deleted_rows:
+        raise HTTPException(status_code=404, detail="User not found")

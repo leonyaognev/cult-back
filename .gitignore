@@ -1,0 +1,4 @@
+/*.sql
+.env
+volume/
+postgres-language-server.jsonc

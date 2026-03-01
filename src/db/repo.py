@@ -1,7 +1,7 @@
 from typing import Generic, List, Type, TypeVar
 from sqlalchemy import select, delete, update
 
-from bot.db.utils import get_session
+from db.utils import get_session
 
 T = TypeVar("T")
 
@@ -58,7 +58,7 @@ class Repo(Generic[T]):
                 return result.rowcount or 0
         return 0
 
-    async def delete_by_field(self, field_name: str, value: str) -> int:
+    async def delete_by_field(self, field_name: str, value) -> int:
         async for session in get_session():
             model_field = getattr(self.model, field_name)
             if not model_field:
